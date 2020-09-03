@@ -1,0 +1,9 @@
+pymongo
+mongoengine
+# tqdm
+# colorama
+python-dateutil
+lxml
+pandas
+csv-2-mongo
+pymongoimport
