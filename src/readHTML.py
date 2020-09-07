@@ -1,11 +1,9 @@
 from lxml import html
 import csv
 from pymongo import MongoClient
-import pymongoimport
-import pandas as pd
 import os
 from pathlib import Path
-import json
+
 
 # Open TUI folder
 path = Path('D:\\ComCore_Projects\\')
@@ -18,6 +16,7 @@ def import_content(csv_name, project):
     collect_name = csv_name
     db_cm = mng_db[collect_name]
     print(mng_db.list_collection_names())
+
     # pymongoimport
 
     # # cdir = os.path.dirname(__file__)
@@ -63,7 +62,34 @@ def import_content(csv_name, project):
     # db_cm.insert(data_json)
 
 
-def write_headers(csv_writer, div_parent, csv_name, proj_name):
+def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
+    # for head in div_parent.iter("th"):
+    # print(head.text_content())
+    # header_arr.append(head.text_content())
+    header_arr = ["Info", "Value"]
+    csv_writer.writerow(header_arr)
+
+    info_arr = []
+    value_arr = []
+    for row in div_parent.iter("tr"):
+        for element in row.iter("td"):
+            if element.text_content():                                                  ## check for empty strings
+                if element.text_content().endswith(":"):
+                    info_arr.append(element.text_content())
+                else:
+                    value_arr.append(element.text_content())
+
+    ##[[https://medium.com/analytics-vidhya/using-the-zip-function-in-python-part-3-b6665019a6ec]] info on how to use Zip function in python
+    zippedInfo = [row for row in zip(info_arr,value_arr)]
+
+    for row in zippedInfo:
+        csv_writer.writerow(row)
+
+    print('done writing csv')
+    import_content(csv_name, proj_name)
+
+
+def write_other_contents(csv_writer, div_parent, csv_name, proj_name):
     header_arr = []
     for head in div_parent.iter("th"):
         # print(head.text_content())
@@ -72,11 +98,11 @@ def write_headers(csv_writer, div_parent, csv_name, proj_name):
     csv_writer.writerow(header_arr)
 
     for row in div_parent.iter("tr"):
-        contentArr = []
+        content_arr = []
         for element in row.iter("td"):
-            contentArr.append(element.text_content())
+            content_arr.append(element.text_content())
 
-        csv_writer.writerow(contentArr)
+        csv_writer.writerow(content_arr)
 
     print('done writing csv')
     import_content(csv_name, proj_name)
@@ -95,8 +121,14 @@ def read_project_report(file_path, proj_name):
             csv_file_name = header.text_content() + '.csv'
             with open(csv_file_name, 'w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
-                write_headers(writer, div_parent, header.text_content(), proj_name)
+                write_other_contents(writer, div_parent, header.text_content(), proj_name)
                 # writeContents(writer,div_parent)
+        else:
+            div_parent = (header.getparent()).getparent()
+            csv_file_name = header.text_content() + '.csv'
+            with open(csv_file_name, 'w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                write_sytem_contents(writer, div_parent, header.text_content(), proj_name)
 
 
 if __name__ == "__main__":

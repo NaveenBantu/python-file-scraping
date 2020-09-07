@@ -15,7 +15,7 @@ def convert_csv_file(csv_file):
         client = MongoClient('localhost', 27017)
         mg_db = client['AdanaBM1']
         print(mg_db.list_collection_names())
-        db_collect = mg_db['First'][csv_name]
+        db_collect = mg_db[csv_name]
         db_collect.drop()
         dict_file = csv.DictReader(f)
         for row in dict_file:
