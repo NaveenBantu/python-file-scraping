@@ -7,6 +7,8 @@ except Exception as e:
     print("Some Modules are missing")
 
 
+##for reference https://github.com/soumilshah1995/CSVtoMongoDB/blob/master/test.py
+
 class MongoDB(object):
 
     def __init__(self, dB_name=None, collection_name=None):
@@ -26,7 +28,7 @@ class MongoDB(object):
         self.collection.drop()
 
         df = pd.read_csv(path)
-        data = df.to_dict('records')                # Convert to dictionary
+        data = df.to_dict('records')  # Convert to dictionary
 
         # self.collection.insert_one({"index": "system_info", "data": data}) # inesrt into DB
 
