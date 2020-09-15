@@ -41,11 +41,11 @@ def extract_zip_file(file, path_zip, proj_folder):
 
 def get_zip_file(zip_path, proj_name):
     for root, dirs, all_files in os.walk(zip_path):
-        # print(files)
+        # looping through all the subfolders in the root to extract the Zip files
         for zipFile in all_files:
             if zipFile.endswith('.zip'):
-                print(zipFile)
-                extract_zip_file(zipFile, zip_path, proj_name)
+                # print(zipFile)
+                extract_zip_file(zipFile, root, proj_name)          #changed the path of the zip file to the root of the os.walk (before it was pointing to the main folder)
 
 
 def search_zip_files(path_sub, proj_name):
