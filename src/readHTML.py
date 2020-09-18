@@ -10,14 +10,12 @@ path = Path('D:\\ComCore_Projects\\')
 
 
 def import_content(csv_name, project, data):
-    mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name=project)
+    # Adding every Sys info into MongoDB
+    mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name='SysInfo')
     mongo_obj.InsertData(data,csv_name)
 
 
 def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
-    # for head in div_parent.iter("th"):
-    # print(head.text_content())
-    # header_arr.append(head.text_content())
     header_arr = ["Info", "Value"]
     csv_writer.writerow(header_arr)
 
@@ -33,13 +31,6 @@ def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
 
     dict_info = dict(zip(info_arr,value_arr))
     print(dict_info)
-
-    ##[[https://medium.com/analytics-vidhya/using-the-zip-function-in-python-part-3-b6665019a6ec]] info on how to use Zip function in python
-    #zippedInfo = [row for row in zip(info_arr,value_arr)]
-   #print(zippedInfo)
-
-    #for row in zippedInfo:
-    #    csv_writer.writerow(row)
 
     print(f'done writing csv {csv_name}')
 
@@ -101,4 +92,5 @@ if __name__ == "__main__":
             proj_path = os.path.join(path, project)
             for file in os.listdir(proj_path):
                 file_path = os.path.join(proj_path,file)
+                # if (project == "AdanaBM1"):
                 read_project_report(file_path, project)
