@@ -8,10 +8,11 @@ from src.convertToJSON import MongoDBClass
 # Open TUI folder
 path = Path('D:\\ComCore_Projects\\')
 
+projArray = []
 
-def import_content(csv_name, project, data):
+def import_content(csv_name, col_name, data):
     # Adding every Sys info into MongoDB
-    mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name='SysInfo')
+    mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name=col_name)
     mongo_obj.InsertData(data,csv_name)
 
 
@@ -30,11 +31,13 @@ def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
                     value_arr.append(element.text_content())
 
     dict_info = dict(zip(info_arr,value_arr))
-    print(dict_info)
 
-    print(f'done writing csv {csv_name}')
+    projArray.append(dict_info['System Name'])
+    print(dict_info['System Name'])
 
-    import_content(csv_name, proj_name, dict_info)
+    #print(f'done writing csv {proj_name}')
+
+    import_content(csv_name, 'SysInfo', dict_info)
 
 
 def write_other_contents(csv_writer, div_parent, csv_name, proj_name):
@@ -46,17 +49,18 @@ def write_other_contents(csv_writer, div_parent, csv_name, proj_name):
 
     csv_writer.writerow(header_arr)
 
+    content_arr = []
     for row in div_parent.iter("tr"):
-        content_arr = []
         for element in row.iter("td"):
             content_arr.append(element.text_content())
 
-        temp_dict = {**content_dict, **dict(zip(header_arr,content_arr))}
-        csv_writer.writerow(content_arr)
+        #temp_dict = {**content_dict, **dict(zip(header_arr,content_arr))}
+        #csv_writer.writerow(content_arr)
 
-    if(csv_name == 'disk_space'):
-        print(f'done writing csv {content_dict}')
-    #import_content(csv_name, proj_name)
+    dict_info = dict(zip(header_arr, content_arr))
+
+    print(f'done writing csv {csv_name}')
+    import_content(csv_name, csv_name, dict_info)
 
 
 def read_project_report(file_path, proj_name):
@@ -73,7 +77,7 @@ def read_project_report(file_path, proj_name):
             csv_file_name = doc_name + '.csv'
             with open(csv_file_name, 'w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
-                write_other_contents(writer, div_parent, doc_name, proj_name)
+                #write_other_contents(writer, div_parent, doc_name, proj_name)
                 # writeContents(writer,div_parent)
         else:
             div_parent = (header.getparent()).getparent()
