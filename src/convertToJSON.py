@@ -30,6 +30,10 @@ class MongoDBClass(object):
         self.collection.insert_one(data)             #insert Dict type data into MongoDB Collection
         print("All the Data has been Exported to Mongo DB Server .... ")
 
+    def UpdateData(self, projFilter=None, data=None):
+        self.collection.update_one(projFilter, {"$set": data})
+        print("updating data ")
+
 
 if __name__ == "__main__":
     mongodb = MongoDBClass(dB_name='ComProjects', collection_name='project')                #test MongoDBClass
