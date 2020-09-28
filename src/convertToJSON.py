@@ -20,7 +20,7 @@ class MongoDBClass(object):
         self.DB = self.client[self.dB_name]
         self.collection = self.DB[self.collection_name]
 
-    def InsertData(self, data=None, doc_name=None):
+    def InsertData(self, data=None):
         """
         :param path: Path os csv File
         :return: None

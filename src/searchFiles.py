@@ -61,4 +61,4 @@ for files in os.listdir(path):
     if os.path.isdir(os.path.join(path, files)):
         # print(files)
         # if ( files == "AdanaBM1"):
-        search_zip_files(os.path.join(path, files), files)
+        search_zip_files(os.path.join(path, files), files.replace(" ","_"))

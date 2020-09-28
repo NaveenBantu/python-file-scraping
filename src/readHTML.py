@@ -9,11 +9,13 @@ from src.convertToJSON import MongoDBClass
 path = Path('D:\\ComCore_Projects\\')
 
 projArray = []
+dateTimeArray = []
 
-def import_content(csv_name, col_name, data):
+def import_content(col_name, data, actionType):
     # Adding every Sys info into MongoDB
     mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name=col_name)
-    mongo_obj.InsertData(data,csv_name)
+    if actionType == 'insert':
+        mongo_obj.InsertData(data)
 
 
 def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
@@ -22,6 +24,9 @@ def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
 
     info_arr = []
     value_arr = []
+    #dict_info = {}
+
+    #print(f'dict info initial ', dict_info)
     for row in div_parent.iter("tr"):
         for element in row.iter("td"):
             if element.text_content():                                                  ## check for empty strings
@@ -30,14 +35,26 @@ def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
                 else:
                     value_arr.append(element.text_content())
 
-    dict_info = dict(zip(info_arr,value_arr))
+    sys_info = dict(zip(info_arr, value_arr))
 
-    projArray.append(dict_info['System Name'])
-    print(dict_info['System Name'])
+    if sys_info['System Name'] in projArray:
+        print(f'writing backups')
+    else:
+        proj_info = {key: sys_info[key] for key in sys_info.keys() & {'System Name', 'Operating System'}}               #https://www.geeksforgeeks.org/python-extract-specific-keys-from-dictionary/
+        dict_info = {'_id': sys_info['System Name'].lower()}
+        dict_info.update(proj_info)
+        projArray.append(sys_info['System Name'])
+        import_content('Projects', dict_info, 'insert')
+
+
+    #dateTimeArray.append(dict_info['Date/Time (UTC)'])
+
+
+    #if(dict_info['System Name'] in projArray):
 
     #print(f'done writing csv {proj_name}')
 
-    import_content(csv_name, 'SysInfo', dict_info)
+
 
 
 def write_other_contents(csv_writer, div_parent, csv_name, proj_name):
@@ -90,11 +107,16 @@ def read_project_report(file_path, proj_name):
 if __name__ == "__main__":
     for project in os.listdir(path):
         project = project.replace(" ","_")
-        print(f"project {project}")
+        #print(f"project {project}")
         if os.path.isdir(os.path.join(path, project)):
             # print(os.listdir(os.path.join(path, project)))
             proj_path = os.path.join(path, project)
             for file in os.listdir(proj_path):
                 file_path = os.path.join(proj_path,file)
-                # if (project == "AdanaBM1"):
+                #if (project == "AdanaBM1"):
                 read_project_report(file_path, project)
+
+uniqueProjs = set(projArray)
+projList = list(uniqueProjs)
+projList.sort()
+print(projList)
