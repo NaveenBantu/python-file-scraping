@@ -11,8 +11,9 @@ path = Path('D:\\ComCore_Projects\\')
 projArray = []
 dateTimeArray = []
 
+
+# Adding or updating project info into MongoDB
 def import_content(col_name, data, actionType):
-    # Adding every Sys info into MongoDB
     mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name=col_name)
     if actionType == 'insert':
         mongo_obj.InsertData(data)
@@ -41,7 +42,7 @@ def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
         print(f'writing backups')
     else:
         proj_info = {key: sys_info[key] for key in sys_info.keys() & {'System Name', 'Operating System'}}               #https://www.geeksforgeeks.org/python-extract-specific-keys-from-dictionary/
-        dict_info = {'_id': sys_info['System Name'].lower()}
+        dict_info = {'_id': sys_info['System Name'].lower(), 'Project Name': proj_name}
         dict_info.update(proj_info)
         projArray.append(sys_info['System Name'])
         import_content('Projects', dict_info, 'insert')
@@ -53,8 +54,6 @@ def write_sytem_contents(csv_writer, div_parent, csv_name, proj_name):
     #if(dict_info['System Name'] in projArray):
 
     #print(f'done writing csv {proj_name}')
-
-
 
 
 def write_other_contents(csv_writer, div_parent, csv_name, proj_name):
@@ -106,6 +105,7 @@ def read_project_report(file_path, proj_name):
 
 if __name__ == "__main__":
     for project in os.listdir(path):
+        projName = project
         project = project.replace(" ","_")
         #print(f"project {project}")
         if os.path.isdir(os.path.join(path, project)):
@@ -114,7 +114,7 @@ if __name__ == "__main__":
             for file in os.listdir(proj_path):
                 file_path = os.path.join(proj_path,file)
                 #if (project == "AdanaBM1"):
-                read_project_report(file_path, project)
+                read_project_report(file_path, projName)
 
 uniqueProjs = set(projArray)
 projList = list(uniqueProjs)

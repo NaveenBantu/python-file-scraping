@@ -25,7 +25,7 @@ class MongoDBClass(object):
         :param path: Path os csv File
         :return: None
         """
-        # self.collection.drop()
+        #self.collection.drop()
         # {doc_name: data}
         self.collection.insert_one(data)             #insert Dict type data into MongoDB Collection
         print("All the Data has been Exported to Mongo DB Server .... ")
