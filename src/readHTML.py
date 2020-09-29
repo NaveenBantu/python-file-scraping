@@ -9,13 +9,14 @@ from datetime import datetime
 # Open TUI folder
 path = Path('D:\\ComCore_Projects\\')
 
+#variables to store the intermediate values
 projArray = []
 dateTimeArray = []
 backupsArray = []
 contentArray = []
 
 # Adding or updating project info into MongoDB
-def import_content(col_name, data, dataFilter, actionType):
+def insert_content(col_name, data, dataFilter, actionType):
     mongo_obj = MongoDBClass(dB_name='ComProjects', collection_name=col_name)
     if actionType == 'insert':
         mongo_obj.InsertData(data)
@@ -46,26 +47,29 @@ def write_sytem_contents(div_parent, csv_name, proj_name):
         for date in dateTimeArray:
             if date < backup_date:
                 dateTimeArray[0] = backup_date
+                insert_content('Projects', {'Last Update on': backup_date}, {'_id': project_id}, 'update')
                 rest_update = True
     else:
         backupsArray.clear()
         dateTimeArray.clear()
         proj_info = {key: sys_info[key] for key in sys_info.keys() & {'System Name', 'Operating System'}}               #https://www.geeksforgeeks.org/python-extract-specific-keys-from-dictionary/
-        dict_info = {'_id': project_id, 'Project Name': proj_name}
+        dict_info = {'_id': project_id, 'Project Name': proj_name, }
         dict_info.update(proj_info)
         projArray.append(sys_info['System Name'])
-        import_content('Projects', dict_info, '', 'insert')
+        insert_content('Projects', dict_info, '', 'insert')
         backupsArray.append(sys_info)
-        dateTimeArray.append(datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X'))
-        print(f'date time of backup {dateTimeArray}')
+        last_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X')
+        dateTimeArray.append(last_date)
+        insert_content('Projects', {'Last Update on': last_date}, {'_id': project_id}, 'update')
         rest_update = True
 
     backup_info = {'backups': backupsArray}
-    import_content('Projects', backup_info, {'_id': project_id}, 'update')
+    insert_content('Projects', backup_info, {'_id': project_id}, 'update')
 
     return rest_update, project_id
 
 
+#Adding other contents to the Database
 def write_other_contents(div_parent, cont_type, proj_id):
     header_arr = []
     cont_arr = []
@@ -83,7 +87,7 @@ def write_other_contents(div_parent, cont_type, proj_id):
     if(len(contentArray) != 0):
         del contentArray[0]         # removing first empty object in content array
         content = {cont_type: contentArray}
-        import_content('Projects', content, {'_id': proj_id}, 'update')
+        insert_content('Projects', content, {'_id': proj_id}, 'update')
 
 
 def read_project_report(file_path, proj_name):
@@ -125,8 +129,3 @@ if __name__ == "__main__":
                 file_path = os.path.join(proj_path,file)
                 #if (project == "AdanaBM1"):
                 read_project_report(file_path, projName)
-
-uniqueProjs = set(projArray)
-projList = list(uniqueProjs)
-projList.sort()
-print(dateTimeArray)
