@@ -43,11 +43,11 @@ def write_sytem_contents(div_parent, csv_name, proj_name):
     if sys_info['System Name'] in projArray:
         print(f'writing backups')
         backupsArray.append(sys_info)
-        backup_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X')
+        backup_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X').date()
         for date in dateTimeArray:
             if date < backup_date:
                 dateTimeArray[0] = backup_date
-                insert_content('Projects', {'Last Update on': backup_date}, {'_id': project_id}, 'update')
+                insert_content('Projects', {'Last Update on': str(backup_date)}, {'_id': project_id}, 'update')
                 rest_update = True
     else:
         backupsArray.clear()
@@ -58,9 +58,9 @@ def write_sytem_contents(div_parent, csv_name, proj_name):
         projArray.append(sys_info['System Name'])
         insert_content('Projects', dict_info, '', 'insert')
         backupsArray.append(sys_info)
-        last_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X')
+        last_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X').date()
         dateTimeArray.append(last_date)
-        insert_content('Projects', {'Last Update on': last_date}, {'_id': project_id}, 'update')
+        insert_content('Projects', {'Last Update on': str(last_date)}, {'_id': project_id}, 'update')
         rest_update = True
 
     backup_info = {'backups': backupsArray}
@@ -106,7 +106,7 @@ def read_project_report(file_path, proj_name):
                 #writer = csv.writer(projFile)
                 update, project_id = write_sytem_contents(div_parent, doc_name, proj_name)
         elif update:
-            print(header.text_content())
+            #print(header.text_content())
             cont_type = header.text_content()
             #print(f'update value {update} of {project_id}')
             div_parent = (header.getparent()).getparent()
