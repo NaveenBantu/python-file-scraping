@@ -8,6 +8,22 @@ path = Path('T:\\')
 # place all the extracted files in an Output folder
 outPath = Path('D:\\ComCore_Projects\\')
 
+def extract_log_files(zf,porject_path):
+    rep_info = zf.getinfo('Report.html')
+    rep_date_time = rep_info.date_time
+    listOfFileNames = zf.namelist()
+    for fileName in listOfFileNames:
+        if fileName.endswith('.csv'):
+            # Extract a single file from zip
+            # zf.extract(fileName, 'temp_py')
+            if ((fileName).find('APP') > -1):
+                log_folder = str(rep_date_time[2]) + '_' + str(rep_date_time[1]) + '_' + str(rep_date_time[0]) + '_Logs'
+                log_path = os.path.join(porject_path, log_folder)
+                if not os.path.isdir(log_path):
+                    os.mkdir(os.path.join(porject_path, log_folder))
+
+                zf.extract(fileName, log_path)
+                print(f'All the csv files are extracted+ {log_path} {fileName} {rep_date_time}')
 
 def extract_zip_file(file, path_zip, proj_folder):
     os.chdir(path_zip)
@@ -25,17 +41,20 @@ def extract_zip_file(file, path_zip, proj_folder):
         # an archive filename, or a ZipInfo object. If you alter the ZipInfo object’s filename attribute before
         # extraction, extract(zipinfo) will then use the new name for extraction, but extract the original data.
         rep_info = zf.getinfo('Report.html')
+
         rep_date_time = rep_info.date_time
         rep_info.filename = str(rep_date_time[2]) + '_' + str(rep_date_time[1]) + '_' + str(
             rep_date_time[0]) + '_' + rep_info.filename
 
         zf.extract(rep_info, proj_path)
+        extract_log_files(zf,proj_path)
 
     except (IOError, zipfile.BadZipfile) as e:
         print(e)
         pass
 
-    except KeyError:
+    except KeyError as e1:
+        print(e1)
         pass
 
 
@@ -44,7 +63,7 @@ def get_zip_file(zip_path, proj_name):
         # looping through all the subfolders in the root to extract the Zip files
         for zipFile in all_files:
             if zipFile.endswith('.zip'):
-                # print(zipFile)
+                #print(root)
                 extract_zip_file(zipFile, root, proj_name)          #changed the path of the zip file to the root of the os.walk (before it was pointing to the main folder)
 
 
@@ -60,5 +79,5 @@ def search_zip_files(path_sub, proj_name):
 for files in os.listdir(path):
     if os.path.isdir(os.path.join(path, files)):
         # print(files)
-        # if ( files == "AdanaBM1"):
-        search_zip_files(os.path.join(path, files), files.replace(" ","_"))
+        if ( files == "JacareiPM1"):
+            search_zip_files(os.path.join(path, files), files.replace(" ","_"))
