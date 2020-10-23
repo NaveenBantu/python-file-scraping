@@ -7,11 +7,11 @@ from src.convertToJSON import MongoDBClass
 from datetime import datetime
 
 # Open TUI folder
-path = Path('D:\\ComCore_Projects\\')
+path = Path('E:\\ComCore_Projects\\')
 
 #variables to store the intermediate values
 projArray = []
-dateTimeArray = []
+dateTimeDict = {}
 backupsArray = []
 contentArray = []
 
@@ -41,17 +41,20 @@ def write_sytem_contents(div_parent, csv_name, proj_name):
     project_id = sys_info['System Name'].lower()
 
     if sys_info['System Name'] in projArray:
-        print(f'writing backups')
+        print(f'writing backups {sys_info["System Name"]}')
         backupsArray.append(sys_info)
         backup_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X').date()
-        for date in dateTimeArray:
-            if date < backup_date:
-                dateTimeArray[0] = backup_date
-                insert_content('Projects', {'Last Update on': str(backup_date)}, {'_id': project_id}, 'update')
-                rest_update = True
+        #for date in dateTimeDict[sys_info['System Name']]:
+        date = dateTimeDict[sys_info['System Name']]
+        #print(f'date in array {date}')
+        #print(f"date of file {backup_date}")
+        if date < backup_date:
+            dateTimeDict[sys_info['System Name']] = backup_date
+            insert_content('Projects', {'Last Update on': str(backup_date)}, {'_id': project_id}, 'update')
+            rest_update = True
     else:
         backupsArray.clear()
-        dateTimeArray.clear()
+        #dateTimeDict.clear()
         proj_info = {key: sys_info[key] for key in sys_info.keys() & {'System Name', 'Operating System'}}               #https://www.geeksforgeeks.org/python-extract-specific-keys-from-dictionary/
         dict_info = {'_id': project_id, 'Project Name': proj_name, }
         dict_info.update(proj_info)
@@ -59,7 +62,8 @@ def write_sytem_contents(div_parent, csv_name, proj_name):
         insert_content('Projects', dict_info, '', 'insert')
         backupsArray.append(sys_info)
         last_date = datetime.strptime(sys_info['Date/Time (UTC)'], '%Y-%m-%d %X').date()
-        dateTimeArray.append(last_date)
+        dateTimeDict[sys_info['System Name']] = last_date
+        print(f'date last update {dateTimeDict}')
         insert_content('Projects', {'Last Update on': str(last_date)}, {'_id': project_id}, 'update')
         rest_update = True
 
@@ -90,31 +94,50 @@ def write_other_contents(div_parent, cont_type, proj_id):
         insert_content('Projects', content, {'_id': proj_id}, 'update')
 
 
-def read_project_report(file_path, proj_name):
+def read_html_file(file_path, proj_name):
     root = html.parse(file_path).getroot()
-    print(root)
+    #print(file_path)
+    #print(root)
     header_elements = root.xpath('//h3')
     update = False
     project_id = None
     # print(th_elements)
     for header in header_elements:
-        doc_name = header.text_content().lower().replace(" ","_")
+        doc_name = header.text_content().lower().replace(" ", "_")
+        # adding system information
         if header.text_content() == 'System Information':
             div_parent = (header.getparent()).getparent()
-            csv_file_name = doc_name+ '.csv'
-            with open(csv_file_name, 'w', newline='', encoding='utf-8') as projFile:
-                #writer = csv.writer(projFile)
-                update, project_id = write_sytem_contents(div_parent, doc_name, proj_name)
+            update, project_id = write_sytem_contents(div_parent, doc_name, proj_name)
+        # adding the rest of the html content
         elif update:
-            #print(header.text_content())
             cont_type = header.text_content()
-            #print(f'update value {update} of {project_id}')
             div_parent = (header.getparent()).getparent()
-            csv_file_name = doc_name + '.csv'
-            with open(csv_file_name, 'w', newline='', encoding='utf-8') as projFile:
-                #writer = csv.writer(projFile)
-                write_other_contents(div_parent, cont_type, project_id)
-                # writeContents(writer,div_parent)
+            write_other_contents(div_parent, cont_type, project_id)
+
+
+def read_other_file(file):
+    print (f'in other file {file}')
+
+
+def getFilePathInfo(absolute):
+    basename = os.path.basename(absolute)
+    info = os.path.splitext(basename)
+    file_info = {
+        "dirname": os.path.dirname(absolute),
+        "basename": os.path.basename(absolute),
+        "info": os.path.splitext(basename),
+        "filename": info[0],
+        "extend": info[1]
+    }
+    return file_info
+
+
+def read_project_report(file_path, proj_name):
+    if os.path.isfile(file_path):
+        if(getFilePathInfo(file_path)["extend"] == ".html"):
+            read_html_file(file_path, proj_name)
+        else:
+            read_other_file(file_path)
 
 
 if __name__ == "__main__":
@@ -127,5 +150,5 @@ if __name__ == "__main__":
             proj_path = os.path.join(path, project)
             for file in os.listdir(proj_path):
                 file_path = os.path.join(proj_path,file)
-                #if (project == "AdanaBM1"):
+                #if (project == "JacareiPM1"):
                 read_project_report(file_path, projName)
