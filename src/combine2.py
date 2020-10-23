@@ -15,7 +15,8 @@ class AnalyzeLogs(object):
 
         # combine all files in the list
         self.header_names = ['Timestamp', ' CmpId', 'ClassId', 'ErrorId', 'InfoId', 'InfoText']
-        self.combined_csv = pd.concat([pd.read_csv(f, header=None, comment=';', names=self.header_names, skip_blank_lines=True, usecols=[0, 1, 2, 3, 4, 5]) for f in self.all_filenames], ignore_index=True)
+        self.content = [pd.read_csv(f, header=None, comment=';', names=self.header_names, skip_blank_lines=True, usecols=[0, 1, 2, 3, 4, 5], encoding='utf-8') for f in self.all_filenames]
+        self.combined_csv = pd.concat(self.content, ignore_index=True)
 
         print(self.combined_csv['InfoText'].str.contains('Persistence').value_counts()[True])
         self.extract_problem_logs(self.combined_csv, fileName, proj_path)
@@ -23,8 +24,11 @@ class AnalyzeLogs(object):
     def extract_problem_logs(self, df=None, fileName=None, project_path=None):
         # prob_csv = df.loc[(df['ClassId']>1) & (df['ClassId']<=8)]
         prob_csv = df.loc[(df['ClassId'] == 8)]  # extracting all the exceptions
-        print(prob_csv)
-        prob_csv.to_csv(os.path.join(project_path, fileName + "_exceptions.csv"), index=False, encoding='utf-8-sig')
+        print(len(prob_csv))
+
+        #check if there are any exceptions and then add to the file.
+        if(len(prob_csv) > 0) :
+            prob_csv.to_csv(os.path.join(project_path, fileName + "_exceptions.csv"), index=False, encoding='utf-8-sig')
 
 
 # testing the class

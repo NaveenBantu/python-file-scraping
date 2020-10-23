@@ -10,12 +10,12 @@ path = Path('T:\\')
 # place all the extracted files in an Output folder
 outPath = Path('E:\\ComCore_Projects\\')
 
-def extract_log_files(zf, project_path):
+def extract_log_files(zf, project_path, zip_name):
     rep_info = zf.getinfo('Report.html')
     rep_date_time = rep_info.date_time
     listOfFileNames = zf.namelist()
 
-    log_folder = str(rep_date_time[2]) + '_' + str(rep_date_time[1]) + '_' + str(rep_date_time[0]) + '_Logs'
+    log_folder = zip_name + '_Logs'
     log_path = os.path.join(project_path, log_folder)
     parent_log_folder = None
 
@@ -41,8 +41,6 @@ def extract_zip_file(file, path_zip, proj_folder):
     os.chdir(path_zip)
     try:
         zf = zipfile.ZipFile(file)
-        print(zf.getinfo('Report.html').date_time)
-        print(zf.getinfo('Report.html').filename)
 
         proj_path = os.path.join(outPath, proj_folder)
         if not os.path.isdir(proj_path):
@@ -54,12 +52,12 @@ def extract_zip_file(file, path_zip, proj_folder):
         # extraction, extract(zipinfo) will then use the new name for extraction, but extract the original data.
         rep_info = zf.getinfo('Report.html')
 
-        rep_date_time = rep_info.date_time
-        rep_info.filename = str(rep_date_time[2]) + '_' + str(rep_date_time[1]) + '_' + str(
-            rep_date_time[0]) + '_' + rep_info.filename
+        # setting the filename in the folder
+        zip_name = file.split(".")[0]
+        rep_info.filename = zip_name + '_' + rep_info.filename
 
         zf.extract(rep_info, proj_path)
-        extract_log_files(zf,proj_path)
+        extract_log_files(zf, proj_path, zip_name)
 
     except (IOError, zipfile.BadZipfile) as e:
         print(e)
@@ -91,5 +89,7 @@ def search_zip_files(path_sub, proj_name):
 for files in os.listdir(path):
     if os.path.isdir(os.path.join(path, files)):
         # print(files)
-        if ( files != "CordobaPM1"):
+
+        #if (files == "JacareiPM1"):
+        if (files != "CordobaPM1"):
             search_zip_files(os.path.join(path, files), files.replace(" ","_"))
