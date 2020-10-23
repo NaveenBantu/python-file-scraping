@@ -2,28 +2,40 @@ import os
 from pathlib import Path
 import zipfile
 
+from src.combine2 import AnalyzeLogs
+
 # Open TUI folder
 path = Path('T:\\')
 
 # place all the extracted files in an Output folder
-outPath = Path('D:\\ComCore_Projects\\')
+outPath = Path('E:\\ComCore_Projects\\')
 
-def extract_log_files(zf,porject_path):
+def extract_log_files(zf, project_path):
     rep_info = zf.getinfo('Report.html')
     rep_date_time = rep_info.date_time
     listOfFileNames = zf.namelist()
+
+    log_folder = str(rep_date_time[2]) + '_' + str(rep_date_time[1]) + '_' + str(rep_date_time[0]) + '_Logs'
+    log_path = os.path.join(project_path, log_folder)
+    parent_log_folder = None
+
     for fileName in listOfFileNames:
         if fileName.endswith('.csv'):
             # Extract a single file from zip
             # zf.extract(fileName, 'temp_py')
             if ((fileName).find('APP') > -1):
-                log_folder = str(rep_date_time[2]) + '_' + str(rep_date_time[1]) + '_' + str(rep_date_time[0]) + '_Logs'
-                log_path = os.path.join(porject_path, log_folder)
                 if not os.path.isdir(log_path):
-                    os.mkdir(os.path.join(porject_path, log_folder))
+                    os.mkdir(os.path.join(project_path, log_folder))
 
                 zf.extract(fileName, log_path)
                 print(f'All the csv files are extracted+ {log_path} {fileName} {rep_date_time}')
+                parent_log_folder = fileName.split('/')[0]
+
+    print(f'parent log folder {parent_log_folder}')
+    if(parent_log_folder != None):
+        csv_log_path = os.path.join(log_path, parent_log_folder)
+        csv_log_analysis = AnalyzeLogs(csv_path=csv_log_path, proj_path=project_path, fileName=log_folder)
+
 
 def extract_zip_file(file, path_zip, proj_folder):
     os.chdir(path_zip)
@@ -79,5 +91,5 @@ def search_zip_files(path_sub, proj_name):
 for files in os.listdir(path):
     if os.path.isdir(os.path.join(path, files)):
         # print(files)
-        if ( files == "JacareiPM1"):
+        if ( files != "CordobaPM1"):
             search_zip_files(os.path.join(path, files), files.replace(" ","_"))
